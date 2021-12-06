@@ -10,10 +10,28 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 
 #define KEY 34553
+void printfile(){
+  int file = open("foo.txt",O_RDONLY);
+  if(file == -1) {
+    printf("Error:\n");
+    printf("%s\n", strerror(errno));
+    }
+  struct stat st;
+  stat("foo.txt", &st);
+  char *buff = malloc(st.st_size);
+  int err = read(file,buff,st.st_size);
+  if(err == -1) {
+    printf("%s\n", strerror(errno));
+  }
+  printf("Contents of Story:\n");
+  printf("%s\n",buff);
+  free(buff);
 
+}
 int main(){
   printf("Do you want to remove or create?:\n");
   char * option = calloc(10, sizeof(char));
@@ -33,8 +51,7 @@ int main(){
     } else {
       semctl(semd, IPC_RMID, 0);
     }
-    char * file = "foo.txt";
-    execvp("cat", &file);
+    printfile();
   } else if (strcmp(option, "create")>0){
     file = open("foo.txt", O_CREAT|O_TRUNC, 0664);
     close(file);
